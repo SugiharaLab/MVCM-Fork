@@ -154,7 +154,7 @@ class EDM:
 
             if self.name in [ 'Simplex', 'SMap', 'Multiview' ] :
                 # Don't check if CCM since default of "1 1" is used.
-                if libStart >= libEnd :
+                if libStart > libEnd :
                     msg = f'{self.name}: CreateIndices() lib start ' +\
                         f' {libStart} exceeds lib end {libEnd}.'
                     raise RuntimeError( msg )
