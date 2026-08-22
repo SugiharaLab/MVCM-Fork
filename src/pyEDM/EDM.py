@@ -142,7 +142,7 @@ class EDM:
             # Odd number of lib
             msg = f'{self.name}: CreateIndices() lib must be an even ' +\
                 'number of elements. Lib start : stop pairs'
-            raise RuntimeError( msg )
+            raise ValueError( msg )
 
         libPairs = [] # List of 2-tuples of lib indices
         for i in range( 0, len( self.lib ), 2 ) :
@@ -157,13 +157,13 @@ class EDM:
                 if libStart > libEnd :
                     msg = f'{self.name}: CreateIndices() lib start ' +\
                         f' {libStart} exceeds lib end {libEnd}.'
-                    raise RuntimeError( msg )
+                    raise ValueError( msg )
 
             # Disallow indices < 1, the user may have specified 0 start
             if libStart < 1 or libEnd < 1 :
                 msg = f'{self.name}: CreateIndices() lib indices ' +\
                     f' less than 1 not allowed.'
-                raise RuntimeError( msg )
+                raise ValueError( msg )
 
         # Loop over each lib pair
         # Add rows for library segments, disallowing vectors
@@ -205,7 +205,7 @@ class EDM:
                 if len( self.lib_i ) < abs( self.Tp ) :
                     msg = f'{self.name}: CreateIndices(): embbeded True ' +\
                           f'Tp = {self.Tp} is invalid for the library.'
-                    raise RuntimeError( msg )
+                    raise ValueError( msg )
             else :
                 vectorStart  = max( [ -embedShift, 0, self.Tp ] )
                 vectorEnd    = min( [ -embedShift, 0, self.Tp ] )
@@ -215,7 +215,7 @@ class EDM:
                     msg = f'{self.name}: CreateIndices(): Combination of E = '+\
                           f'{self.E}  Tp = {self.Tp}  tau = {self.tau} ' +\
                           'is invalid for the library.'
-                    raise RuntimeError( msg )
+                    raise ValueError( msg )
 
         #------------------------------------------------
         # pred_i from pred
@@ -225,7 +225,7 @@ class EDM:
             # Odd number of pred
             msg = f'{self.name}: CreateIndices() pred must be an even ' +\
                 'number of elements. Pred start : stop pairs'
-            raise RuntimeError( msg )
+            raise ValueError( msg )
 
         predPairs = [] # List of 2-tuples of pred indices
         for i in range( 0, len( self.pred ), 2 ) :
@@ -242,13 +242,13 @@ class EDM:
                 if predStart >= predEnd :
                     msg = f'{self.name}: CreateIndices() pred start ' +\
                         f' {predStart} exceeds pred end {predEnd}.'
-                    raise RuntimeError( msg )
+                    raise ValueError( msg )
 
             # Disallow indices < 1, the user may have specified 0 start
             if predStart < 1 or predEnd < 1 :
                 msg = f'{self.name}: CreateIndices() pred indices ' +\
                     ' less than 1 not allowed.'
-                raise RuntimeError( msg )
+                raise ValueError( msg )
 
         # Create pred_i indices from predPairs
         for r in range( len( predPairs ) ) :
@@ -305,13 +305,13 @@ class EDM:
             msg = f'{self.name}: CreateIndices() The prediction index ' +\
                 f'{self.lib_i[-1]} exceeds the number of data rows ' +\
                 f'{self.Data.shape[0]}'
-            raise RuntimeError( msg )
+            raise ValueError( msg )
 
         if self.pred_i[-1] >= self.Data.shape[0] :
             msg = f'{self.name}: CreateIndices() The prediction index ' +\
                 f'{self.pred_i[-1]} exceeds the number of data rows ' +\
                 f'{self.Data.shape[0]}'
-            raise RuntimeError( msg )
+            raise ValueError( msg )
 
         #---------------------------------------------------
         # Check for lib : pred overlap for knn leave-one-out
@@ -348,48 +348,48 @@ class EDM:
             print( f'{self.name}: Validate()' )
 
         if self.Data is None :
-            raise RuntimeError(f'Validate() {self.name}: dataFrame required.')
+            raise ValueError(f'Validate() {self.name}: dataFrame required.')
         else :
             if not isinstance( self.Data, DataFrame ) :
-                raise RuntimeError(f'Validate() {self.name}: dataFrame ' +\
+                raise ValueError(f'Validate() {self.name}: dataFrame ' +\
                                    'is not a Pandas DataFrame.')
 
         if not len( self.columns ) :
-            raise RuntimeError( f'Validate() {self.name}: columns required.' )
+            raise ValueError( f'Validate() {self.name}: columns required.' )
         if not IsIterable( self.columns ) :
             self.columns = self.columns.split()
 
         for column in self.columns :
             if not column in self.Data.columns :
-                raise RuntimeError( f'Validate() {self.name}: column ' +\
+                raise ValueError( f'Validate() {self.name}: column ' +\
                                     f'{column} not found in dataFrame.' )
 
         if not len( self.target ) :
-            raise RuntimeError( f'Validate() {self.name}: target required.' )
+            raise ValueError( f'Validate() {self.name}: target required.' )
         if not IsIterable( self.target ) :
             self.target = self.target.split()
 
         for target in self.target :
             if not target in self.Data.columns :
-                raise RuntimeError( f'Validate() {self.name}: target ' +\
+                raise ValueError( f'Validate() {self.name}: target ' +\
                                     f'{target} not found in dataFrame.' )
 
         if not self.embedded :
             if self.tau == 0 :
-                raise RuntimeError(f'Validate() {self.name}:' +\
+                raise ValueError(f'Validate() {self.name}:' +\
                                    ' tau must be non-zero.')
             if self.E < 1 :
-                raise RuntimeError(f'Validate() {self.name}:' +\
+                raise ValueError(f'Validate() {self.name}:' +\
                                    f' E = {self.E} is invalid.')
 
         if self.name != 'CCM' :
             if not len( self.lib ) :
-                raise RuntimeError( f'Validate() {self.name}: lib required.' )
+                raise ValueError( f'Validate() {self.name}: lib required.' )
             if not IsIterable( self.lib ) :
                 self.lib = [ int(i) for i in self.lib.split() ]
 
             if not len( self.pred ) :
-                raise RuntimeError( f'Validate() {self.name}: pred required.' )
+                raise ValueError( f'Validate() {self.name}: pred required.' )
             if not IsIterable( self.pred ) :
                 self.pred = [ int(i) for i in self.pred.split() ]
 
@@ -408,6 +408,11 @@ class EDM:
                     print( msg, flush = True )
 
         if self.name == 'SMap' :
+            # Require theta
+            if self.theta is None :
+                msg = f'{self.name} Validate(): S-Map theta required.'
+                raise ValueError( msg )
+                
             # embedded = true: Set E to number of columns
             if self.embedded and len( self.columns ) :
                 self.E = len( self.columns )
@@ -416,7 +421,7 @@ class EDM:
                 msg = f'{self.name} Validate(): Multivariable S-Map ' +\
                 'must use embedded = True to ensure data/dimension '  +\
                 'correspondance.'
-                raise RuntimeError( msg )
+                raise ValueError( msg )
 
         if self.generateSteps > 0 :
             # univariate only, embedded must be False
@@ -425,13 +430,13 @@ class EDM:
                 if self.embedded :
                     msg = f'{self.name} Validate(): generateSteps > 0 ' +\
                         'must use univariate embedded = False.'
-                    raise RuntimeError( msg )
+                    raise ValueError( msg )
 
                 if self.target[0] != self.columns[0] :
                     msg = f'{self.name} Validate(): generateSteps > 0 ' +\
                           f'must use univariate target ({self.target[0]}) ' +\
                           f' == columns ({self.columns[0]}).'
-                    raise RuntimeError( msg )
+                    raise ValueError( msg )
 
                 # If times are datetime, AddTime() fails
                 # EDM.time is ndarray storing python datetime
@@ -450,4 +455,4 @@ class EDM:
                         if isinstance( dt0, datetime ) :
                             msg = f'{self.name} Validate(): generateSteps ' +\
                                 'with datetime needs to use noTime = True.'
-                            raise RuntimeError( msg )
+                            raise ValueError( msg )

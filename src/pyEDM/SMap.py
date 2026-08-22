@@ -24,7 +24,7 @@ class SMap( EDMClass ):
                   Tp              = 1,
                   knn             = 0,
                   tau             = -1,
-                  theta           = 0.,
+                  theta           = None,
                   exclusionRadius = 0,
                   solver          = None,
                   embedded        = False,
