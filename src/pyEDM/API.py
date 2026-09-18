@@ -15,6 +15,7 @@ from .SMap      import SMap      as SMapClass
 from .CCM       import CCM       as CCMClass
 from .CCM_24    import CCM       as CCM_24_Class
 from .Multiview import Multiview as MultiviewClass
+from .MVCM      import MVCM      as MVCMClass
 
 import pyEDM.PoolFunc as PoolFunc
 
@@ -710,3 +711,49 @@ def PredictNonlinear( dataFrame       = None,
         show()
 
     return df
+
+
+#------------------------------------------------------------------------
+# MVCM Gap Filling Function
+#------------------------------------------------------------------------
+def MVCM(   dataFrame        = None,
+            columns          = "",
+            target           = "",
+            lib              = "",
+            pred             = "",
+            testSig          = True,
+            alpha            = 0.05,
+            minN             = 0,
+            metric           = 'pearsonr',
+            metricCutoff    = None,
+            theta            = 0,
+            nPartners        = None,
+            numLags          = None,
+            lagTau           = None,
+            D                = None,
+            k                = None,
+            method           = 'SMap',
+            expandTime       = False,
+            useTargetLags    = True,
+            verbose          = False,
+            numProcess       = 4,
+            returnObject     = False,
+            showPlot         = False,
+        ):
+
+    # Initialize the composite class
+    M = MVCMClass( dataFrame=dataFrame, columns=columns, target=target,
+                   lib=lib, pred=pred,
+                   testSig=testSig, alpha=alpha, metric=metric, metricCutoff=metricCutoff,
+                   minN=minN, theta=theta,
+                   nPartners=nPartners, numLags=numLags, lagTau=lagTau,
+                   D=D, k=k, method=method, expandTime=expandTime, useTargetLags=useTargetLags,
+                   verbose=verbose, numProcess=numProcess, returnObject=returnObject,
+                   showPlot=showPlot )
+
+    # Execute the pipeline
+    result = M.Run(  )
+    
+    if returnObject:
+        return { 'Filled': result, 'MVCM': M }
+    return result
